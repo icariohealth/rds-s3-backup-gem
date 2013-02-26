@@ -1,0 +1,11 @@
+rds_instance_id: 
+db_subnet_group_name: 
+s3_bucket: 
+aws_access_key_id: 
+aws_secret_access_key: 
+mysql_database: 
+mysql_username: 
+mysql_password: 
+dump_ttl: 
+data_dog_api_key: 
+obfuscate_sql: /usr/local/etc/obfuscate.sql
