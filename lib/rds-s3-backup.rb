@@ -5,6 +5,7 @@ require "rds-s3-backup/datadog"
 require "rds-s3-backup/myrds"
 require "rds-s3-backup/mys3"
 require "rds-s3-backup/mysqlcmds"
+require 'debugger'
 
 module Rds
   module S3
@@ -53,13 +54,14 @@ module Rds
 
         @dogger = DataDog.new(@options['data_dog_api_key'])
 
-        "Starting RDS-S3-Backup at #{@options[:timestamp]}".tap do |t|
+        "Starting RDS-S3-Backup at #{@options['timestamp']}".tap do |t|
           @logger.info t
           @dogger.send t
         end
 
 
         begin
+          debugger              # TODO: REMOVE FOR RELEASE!!!!
 
           @logger.info "Creating RDS and S3 Connections"
           rds = MyRDS.new(@options)
@@ -69,7 +71,7 @@ module Rds
           rds.restore_db()
 
           @logger.info "Dumping and saving original database contents"
-          real_data_file = "#{rds.server.id}-mysqldump-#{@options[:timestamp]}.sql.gz"
+          real_data_file = "#{rds.server.id}-mysqldump-#{@options['timestamp']}.sql.gz"
           s3.save_production(rds.dump(real_data_file))
 
           if @options['dump_ttl'] > 0

@@ -16,12 +16,12 @@ module Rds::S3::Backup
   class MyS3Exception < RuntimeError ; end
   class MyS3
 
-    def initialise(options)
+    def initialize(options)
       @options = options
 
-      @s3 = get_storage(:aws_access_key_id => @options.aws_access_key_id,
-                        :aws_secret_access_key => @options.aws_secret_access_key,
-                        :region => @options.aws_s3_region ||= @options.aws_region)
+      @s3 = get_storage(:aws_access_key_id => @options['aws_access_key_id'],
+                        :aws_secret_access_key => @options['aws_secret_access_key'],
+                        :region => @options['aws_s3_region'] ||= @options['aws_region'])
     end
 
     def get_storage(o={})
@@ -62,7 +62,7 @@ module Rds::S3::Backup
 
     def save(bucket, file_path, o={})
       options = {
-        :key => File.join(@options.s3_prefix, File.basename(file_path)),
+        :key => File.join(@options['s3_prefix'], File.basename(file_path)),
         :body => File.open(file_path),
         :acl => 'authenticated-read',
         :encryption => 'AES256',
@@ -87,11 +87,11 @@ module Rds::S3::Backup
 
 
     def s3_bucket
-      @s3_bucket ||= get_bucket(@options.s3_bucket)
+      @s3_bucket ||= get_bucket(@options['s3_bucket'])
     end
 
     def backup_bucket
-      @backup_bucket ||= get_bucket(@options.backup_bucket)
+      @backup_bucket ||= get_bucket(@options['backup_bucket'])
     end
 
 

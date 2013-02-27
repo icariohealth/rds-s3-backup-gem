@@ -31,11 +31,6 @@ class MyRDS
 
     @server = get_rds_server(@opts['rds_instance_id'])
 
-    @mysqlcmds = ::Rds::S3::Backup::MySqlCmds.new(backup_server.endpoint['Address'],
-                               @opts['mysql_username'],
-                               @opts['mysql_password'],
-                               @opts['mysql_database'])
-
   end
 
   def restore_db
@@ -53,10 +48,26 @@ class MyRDS
 
 
   def dump(backup_file_name)
+    @mysqlcmds ||= ::Rds::S3::Backup::MySqlCmds.new(backup_server.endpoint['Address'],
+                               @opts['mysql_username'],
+                               @opts['mysql_password'],
+                               @opts['mysql_database'])
+
+
+
+
     @mysqlcmds.dump(backup_file_path(backup_file_name)) # returns the dump file path
   end
 
   def obfuscate
+    @mysqlcmds ||= ::Rds::S3::Backup::MySqlCmds.new(backup_server.endpoint['Address'],
+                               @opts['mysql_username'],
+                               @opts['mysql_password'],
+                               @opts['mysql_database'])
+
+
+
+
     @mysqlcmds.exec(@opts['obfuscate_sql'])
   end
 
