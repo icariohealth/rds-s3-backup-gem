@@ -6,6 +6,7 @@ aws_secret_access_key:
 mysql_database: 
 mysql_username: 
 mysql_password: 
-dump_ttl: 
+dump_ttl: 0
 data_dog_api_key: 
-obfuscate_sql: /usr/local/etc/obfuscate.sql
+obfuscate_sql: test_data/obfuscate.sql
+dump_directory: test_output

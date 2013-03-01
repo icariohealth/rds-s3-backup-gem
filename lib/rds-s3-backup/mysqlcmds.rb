@@ -98,8 +98,11 @@ module Rds::S3::Backup
 
     end
 
+    Result = Struct.new :stdout, :stderr, :code
+
     def _really_run_it(cmd)
-      result = Struct.new :stdout, :stderr, :code
+      debugger
+      result Result.new
       result.stdout = Array.new
       result.stderr = Array.new
       Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|

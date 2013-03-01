@@ -79,24 +79,25 @@ class MyRDS
     @backup_server_id ||= "#{@server.id}-s3-dump-server-#{@opts['timestamp']}"
   end
 
-  def backup_server
-    @backup_server ||= get_rds_server(backup_server_id)
-
-    (0..2).each {|i| @backup_server.wait_for { ready? } } # won't get fooled again!
-    @backup_server
-
-  end
-
   def new_snap
     unless @new_snap
       self.server.snapshots.new(:id => snap_name).save
       @new_snap = self.server.snapshots.get(snap_name)
 
-      (0..2).each {|i| @new_snap.wait_for { ready? } } # ready? sometimes lies
+      (0..1).each {|i|  $logger.debug "#{__FILE__}:#{__LINE__}: Waiting for new_snap server to be ready: #{i}"; @new_snap.wait_for { ready? } } # ready? sometimes lies
 
     end
 
     @new_snap
+  end
+
+  def backup_server
+    @backup_server ||= get_rds_server(backup_server_id)
+
+    debugger
+    (0..1).each {|i|  $logger.debug "#{__FILE__}:#{__LINE__}: Waiting for backup_server to be ready: #{i}" ;  @backup_server.wait_for {ready? } } # won't get fooled again!
+    @backup_server
+
   end
 
   def snap_name
@@ -104,11 +105,12 @@ class MyRDS
   end
 
   def get_rds_connection(opts={})
+    debugger
     options = {
       :aws_access_key_id => @opts['aws_access_key_id'],
       :aws_secret_access_key => @opts['aws_secret_access_key'],
       :region => @opts['aws_region']}.merge(opts)
-    
+    Fog.timeout=15*60           # quarter of an hour for aws to set up a damn data base??
     begin
       connection = Fog::AWS::RDS.new(options)
     rescue Exception => e
@@ -135,12 +137,12 @@ class MyRDS
   def destroy
     
     unless @new_snap.nil?
-      (0..2).each {|i| @new_snap.wait_for { ready? } }
+      (0..1).each {|i| $logger.debug "#{__FILE__}:#{__LINE__}: Waiting for new_snap server to be ready in #{self.class}#destroy: #{i}"; @new_snap.wait_for { ready? } }
       @new_snap.destroy
     end
     
     unless @backup_server.nil?
-      (0..2).each {|i| @backup_server.wait_for { ready? } }
+      (0..1).each {|i|  $logger.debug "#{__FILE__}:#{__LINE__}: Waiting for backup server to be ready in #{self.class}#destroy: #{i}"; @backup_server.wait_for {ready? } }
       @backup_server.destroy(nil)
     end
 
