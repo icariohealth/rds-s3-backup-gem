@@ -34,6 +34,7 @@ class RdsS3Backup < Thor
   method_option :mysql_database
   method_option :mysql_username
   method_option :mysql_password
+  method_option :fog_timeout, :desc => 'Timeout in seconds for Fog requests (AWS connector)'
   method_option :obfuscate_sql, :desc => 'Obfuscation Stored Procedure source'
   method_option :dump_ttl, :desc => "Number of old dumps to keep."
   method_option :dump_directory => "Where to store the temporary sql dump file."
@@ -49,6 +50,7 @@ class RdsS3Backup < Thor
     thor_defaults = {
       'backup_bucket' => 'novu-backups',
       's3_prefix' => 'db_dumps',
+      'fog_timeout' => 30 * 60,
       'obfuscate_sql' => '/usr/local/etc/obfuscate.sql',
       'dump_directory' => '/mnt/secure',
       'dump_ttl' => 0,

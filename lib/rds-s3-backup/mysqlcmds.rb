@@ -12,6 +12,8 @@
 
 =end
 
+require 'open3'
+
 module Rds::S3::Backup
 
   class MySqlCmdsException < RuntimeError ; end
@@ -78,7 +80,7 @@ module Rds::S3::Backup
                   @dbname]
 
 
-      cmd = "#{mysql} #{obf_opts.join(' ')} < #{script}"
+      cmd = "#{@mysql} #{obf_opts.join(' ')} < #{script}"
 
       run(cmd.gsub(/XXPASSWORDXX/,@passwd))
 
@@ -101,8 +103,7 @@ module Rds::S3::Backup
     Result = Struct.new :stdout, :stderr, :code
 
     def _really_run_it(cmd)
-      debugger
-      result Result.new
+      result = Result.new
       result.stdout = Array.new
       result.stderr = Array.new
       Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
@@ -115,7 +116,7 @@ module Rds::S3::Backup
           result.stderr << stderr.gets.chomp
         end
         stderr.close
-        result.code = wait_thr.value
+        result.code = wait_thr.value.exitstatus
       end
       result
     end

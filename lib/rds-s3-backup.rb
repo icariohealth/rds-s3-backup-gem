@@ -49,8 +49,15 @@ module Rds
         end
 
 
+        $logger.debug "#{File.basename(__FILE__)}:#{__LINE__}: Running with options:"
+        debug_opts = @options.dup
+        debug_opts['aws_access_key_id'] = 'X'*10
+        debug_opts['aws_secret_access_key'] = 'Y'*15
+        debug_opts['mysql_password'] = "ZZY"*5
+        debug_opts['data_dog_api_key'] = 'XYZZY'*3
+        $logger.debug debug_opts.to_yaml
+
         begin
-          debugger              # TODO: REMOVE FOR RELEASE!!!!
 
           $logger.info "Creating RDS and S3 Connections"
           rds = MyRDS.new(@options)
@@ -107,7 +114,6 @@ module Rds
       end
 
       def set_logger_level(ll)
-        debugger
         case ll.downcase
         when 'debug' ; Logger::DEBUG
         when 'info' ; Logger::INFO
