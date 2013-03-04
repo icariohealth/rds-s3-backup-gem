@@ -37,7 +37,7 @@ class RdsS3Backup < Thor
   method_option :fog_timeout, :desc => 'Timeout in seconds for Fog requests (AWS connector)'
   method_option :obfuscate_sql, :desc => 'Obfuscation Stored Procedure source'
   method_option :dump_ttl, :desc => "Number of old dumps to keep."
-  method_option :dump_directory => "Where to store the temporary sql dump file."
+  method_option :dump_directory, :desc => "Where to store the temporary sql dump file."
   method_option :config_file, :desc => "YAML file of defaults for any option. Options given during execution override these."
   method_option :aws_region, :desc => "Region of your RDS server (and S3 storage, unless aws-s3-region is specified)."
   method_option :aws_s3_region, :desc => "Region to store your S3 dumpfiles, if different from the RDS region"

@@ -24,6 +24,7 @@ module Rds
         end
 
         def make_dog_client()
+          return unless @api_key
           begin
             Dogapi::Client.new(@api_key)
           rescue Exception => e
@@ -35,7 +36,7 @@ module Rds
 
 
         def send(msg, o={})
-          return                # do nothing for testing
+          return unless @api_key
 
           return if msg.nil? || msg.empty?
 

@@ -42,7 +42,7 @@ module Rds
         $logger.level = set_logger_level(@options["log_level"])
 
         $dogger = DataDog.new(@options['data_dog_api_key'])
-
+        
         "Starting RDS-S3-Backup at #{@options['timestamp']}".tap do |t|
           $logger.info t
           $dogger.send t

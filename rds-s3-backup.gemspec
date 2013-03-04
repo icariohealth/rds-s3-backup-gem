@@ -7,9 +7,9 @@ Gem::Specification.new do |gem|
   gem.version       = Rds::S3::Backup::VERSION
   gem.authors       = ["Tamara Temple"]
   gem.email         = ["tamouse@gmail.com"]
-  gem.description   = %q{"Backup from AWS RDS snapshot to AWS S3 as mysqldump"}
+  gem.description   = %q{"Thor script and libraries to backup an AWS RDS snapshot to AWS S3, and create an obfustacted version to backup on S3 as well"}
   gem.summary       = %q{"Backup from AWS RDS snapshot to AWS S3 as mysqldump"}
-  gem.homepage      = ""
+  gem.homepage      = "https://github.com/novu/rds-s3-backup-gem"
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
