@@ -41,7 +41,7 @@ module Rds
           return if msg.nil? || msg.empty?
 
           options = {
-            :msg_title => 'Alert',
+            :msg_title => 'Message from rds-s3-backup:',
             :alert_type => 'Error',
             :tags => [ "host:#{`hostname`}", "env:production" ],
             :priority => 'normal',

@@ -44,7 +44,7 @@ module Rds
         
         "Starting RDS-S3-Backup at #{@options['timestamp']}".tap do |t|
           $logger.info t
-          $dogger.send t
+          $dogger.send t, :alert_type => 'Info', :priority => 'low'
         end
 
 
