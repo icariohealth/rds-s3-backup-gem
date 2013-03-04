@@ -5,7 +5,6 @@ require "rds-s3-backup/datadog"
 require "rds-s3-backup/myrds"
 require "rds-s3-backup/mys3"
 require "rds-s3-backup/mysqlcmds"
-require 'debugger'
 
 module Rds
   module S3
