@@ -33,20 +33,24 @@ module Rds::S3::Backup
         :scheme => 'https'}.merge(o)
       
       begin
-        Fog::Storage.new(options)
+        storage = Fog::Storage.new(options)
       rescue Exception => e
         raise MyS3Exception.new "Error establishing storage connection: #{e.class}: #{e}"
       end
       
+      raise MyS3Exception.new "In #{self.class}#get_storage: storage is nil!" if storage.nil?
+
     end
 
     def get_bucket(bucket)
 
       begin
-        @s3.directories.get(bucket)
+        bucket = @s3.directories.get(bucket)
       rescue Exception => e
         raise MyS3Exception.new "Error getting bucket #{bucket} in S3: #{e.class}: #{e}"
       end
+
+      raise MyS3Exception.new "In #{self.class}#get_bucket: bucket is nil!" if bucket.nil?
 
     end
 

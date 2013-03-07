@@ -12,7 +12,7 @@ module Rds
       # That does the move from rds to s3
       # And uses this selfsame gem
       # Upgraded with all it's phlegm
-      # In the gem_package resouce
+      # In the gem_package resource
       # In that stabled horse
       # And knifed up to opscode
       # Before your client leaves it's abode
@@ -22,7 +22,7 @@ module Rds
       #  2013-03-04 tamara
 
 
-      VERSION = "0.0.5"
+      VERSION = "0.0.6"
     end
   end
 end
