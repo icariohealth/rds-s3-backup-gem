@@ -14,18 +14,18 @@ module Rds
 
         options = thor_defaults
 
-        if thor_options[:config_file] && File.exists?(thor_options[:config_file])
+        if thor_options["config_file"] && File.exists?(thor_options["config_file"])
           begin
-            options = options.merge(YAML.load(File.read(thor_options[:config_file])))
+            options = options.merge(YAML.load(File.read(thor_options["config_file"])))
           rescue Exception => e
-            raise "Unable to read and parse #{thor_options[:config_file]}: #{e.class}: #{e}"
+            raise "Unable to read and parse #{thor_options["config_file"]}: #{e.class}: #{e}"
           end
         end
 
         options.merge!(thor_options)
 
         # Check for required options
-        missing_options = %w{rds_instance_id s3_bucket aws_access_key_id aws_secret_access_key mysql_database mysql_username mysql_password}.reduce([]) {|a, o| a << o unless options.has_key?(o); a}
+        missing_options = %w{rds_instance_id s3_bucket aws_access_key_id aws_secret_access_key mysql_database mysql_username mysql_password}.select {|o| o unless options.has_key?(o)}
 
         raise "Missing required options #{missing_options.inspect} in either configuration or command line" if missing_options.count > 0
         
@@ -36,8 +36,10 @@ module Rds
 
       def run(thor_options,thor_defaults)
 
-        @options = process_options(thor_options,thor_defaults)
         $logger = Logger.new(STDOUT)
+        @options = process_options(thor_options,thor_defaults)
+        $logger.debug "Running with Options: #{@options.to_yaml}"
+
         $logger.level = set_logger_level(@options["log_level"])
 
         $dogger = DataDog.new(@options['data_dog_api_key'])
@@ -50,24 +52,31 @@ module Rds
 
         $logger.debug "#{File.basename(__FILE__)}:#{__LINE__}: Running with options:"
         debug_opts = @options.dup
-        debug_opts['aws_access_key_id'] = 'X'*10
-        debug_opts['aws_secret_access_key'] = 'Y'*15
-        debug_opts['mysql_password'] = "ZZY"*5
-        debug_opts['data_dog_api_key'] = 'XYZZY'*3
-        $logger.debug debug_opts.to_yaml
+
+        $logger.debug @options.merge(
+        'aws_access_key_id' => 'X'*10,
+        'aws_secret_access_key' => 'Y'*15,
+        'mysql_password' => "ZZY"*5,
+        'data_dog_api_key' => 'XYZZY'*3                                     
+                                     ).to_yaml
 
         begin
 
           $logger.info "Creating RDS and S3 Connections"
           rds = MyRDS.new(@options)
-          s3 = MyS3.new(@options)
+          $logger.debug "rds: #{rds.to_yaml}"
 
-          $logger.info "Restoring Database"
+          $logger.info "Restoring Database"  
           rds.restore_db()
 
           $logger.info "Dumping and saving original database contents"
-          real_data_file = "#{rds.server.id}-mysqldump-#{@options['timestamp']}.sql.gz"
-          s3.save_production(rds.dump(real_data_file))
+          real_data_file = "#{rds.server.id}-mysqldump-#{@options['timestamp']}.sql.gz".
+            tap{|t| $logger.debug "real_data_file: #{t}"}
+ 
+          real_dump_file = rds.dump(real_data_file).tap{|t| $logger.debug "rds.dump returns: #{t}"}
+                    s3 = MyS3.new(@options)
+          $logger.debug "s3: #{s3.to_yaml}"
+          s3.save_production(real_dump_file)
 
           if @options['dump_ttl'] > 0
             $logger.info "Pruning old dumps"
