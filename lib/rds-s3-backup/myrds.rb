@@ -20,23 +20,26 @@ module Rds::S3::Backup
   class MyRDSException < RuntimeError ; end
   class MyRDS
 
-    attr_accessor :rds, :server
-
     def initialize(opts)
       @opts = opts
-
-      @rds = get_rds_connection(:aws_access_key_id => @opts['aws_access_key_id'],
-                                :aws_secret_access_key => @opts['aws_secret_access_key'],
-                                :region => @opts['aws_region'])
-
-      @server = get_rds_server(@opts['rds_instance_id'])
-
     end
 
+    def rds
+      # Memoize @rds
+      @rds ||= get_rds_connection()
+    end
+
+    def server
+      # Memoize @server
+      @server ||= get_rds_server(@opts['rds_instance_id'])
+    end
+
+
+    # Restore the production database from the most recent snapshot
     def restore_db
 
       begin
-        @rds.restore_db_instance_from_db_snapshot(new_snap.id,
+        self.rds.restore_db_instance_from_db_snapshot(new_snap.id,
                                                   backup_server_id,
                                                   {"DBSubnetGroupName" => @opts['db_subnet_group_name'],
                                                     "DBInstanceClass" => @opts['db_instance_type'] } )
@@ -47,6 +50,7 @@ module Rds::S3::Backup
     end
 
 
+    # Dump the database to the backup file name
     def dump(backup_file_name)
       @mysqlcmds ||= ::Rds::S3::Backup::MySqlCmds.new(backup_server.endpoint['Address'],
                                                       @opts['mysql_username'],
@@ -59,14 +63,12 @@ module Rds::S3::Backup
       @mysqlcmds.dump(backup_file_path(backup_file_name)) # returns the dump file path
     end
 
+    # Convert personal data in the production data into random generic data 
     def obfuscate
       @mysqlcmds ||= ::Rds::S3::Backup::MySqlCmds.new(backup_server.endpoint['Address'],
                                                       @opts['mysql_username'],
                                                       @opts['mysql_password'],
                                                       @opts['mysql_database'])
-
-
-
 
       @mysqlcmds.exec(@opts['obfuscate_sql'])
     end
@@ -76,7 +78,7 @@ module Rds::S3::Backup
     end
 
     def backup_server_id
-      @backup_server_id ||= "#{@server.id}-s3-dump-server-#{@opts['timestamp']}"
+      @backup_server_id ||= "#{self.server.id}-s3-dump-server-#{@opts['timestamp']}"
     end
 
     def new_snap
@@ -103,11 +105,11 @@ module Rds::S3::Backup
       @snap_name ||= "s3-dump-snap-#{@opts['timestamp']}"
     end
 
-    def get_rds_connection(opts={})
+    def get_rds_connection()
       options = {
         :aws_access_key_id => @opts['aws_access_key_id'],
         :aws_secret_access_key => @opts['aws_secret_access_key'],
-        :region => @opts['aws_region']}.merge(opts)
+        :region => @opts['aws_region']}
       Fog.timeout=@opts['fog_timeout']
       begin
         connection = Fog::AWS::RDS.new(options)
@@ -116,14 +118,15 @@ module Rds::S3::Backup
       end
       
       raise MyRDSException.new("Unable to make RDS connection") if connection.nil?
-      connection
 
+      connection
 
     end
 
     def get_rds_server(id)
-      begin
-        server = @rds.servers.get(id)
+
+       begin
+        server = self.rds.servers.get(id)
       rescue Exception => e
         raise MyRDSException.new("Error getting server in #{self.class}#get_rds_server: #{e.class}: #{e}")
       end
